@@ -13,17 +13,23 @@ output:
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE, fig.width=8, fig.height=4.5, message=FALSE)
+library(tidyverse)
+library(caret)
+library(caTools)
+library(mosaic)
+library(dplyr)
 set.seed(76)
 ```
 
 # Collaboration
 
-Please indicate who you collaborated with on this assignment:
+Please indicate who you collaborated with on this assignment: Jeff L.
 
 
 # Load packages, data, model formulas
 
 ```{r, warning=FALSE}
+
 library(tidyverse)
 credit <- read_csv("http://www-bcf.usc.edu/~gareth/ISL/Credit.csv") %>%
   select(-X1) %>%
@@ -32,16 +38,6 @@ credit <- read_csv("http://www-bcf.usc.edu/~gareth/ISL/Credit.csv") %>%
 ```
 
 You will train the following 7 models on `credit_train`...
-
-```{r}
-model1_formula <- as.formula("Balance ~ 1")
-model2_formula <- as.formula("Balance ~ Income")
-model3_formula <- as.formula("Balance ~ Income + Limit")
-model4_formula <- as.formula("Balance ~ Income + Limit + Rating")
-model5_formula <- as.formula("Balance ~ Income + Limit + Rating + Age")
-model6_formula <- as.formula("Balance ~ Income + Limit + Rating + Age + Cards")
-model7_formula <- as.formula("Balance ~ Income + Limit + Rating + Age + Cards + Education")
-```
 
 ... where `credit_train` is defined below, along with `credit_test`.
 
@@ -54,6 +50,149 @@ credit_test <- credit %>%
 ```
 
 
+Training models on `credit_train`
+```{r}
+model1_formula <- as.formula("Balance ~ 1")
+
+model_1 <- lm(model1_formula, data=credit_train)
+
+model_1 %>% 
+  broom::tidy(conf.int=TRUE)
+
+model2_formula <- as.formula("Balance ~ Income")
+
+model_2 <- lm(model2_formula, data=credit_train)
+
+model_2 %>% 
+  broom::tidy(conf.int=TRUE)
+
+
+model3_formula <- as.formula("Balance ~ Income + Limit")
+
+model_3 <- lm(model3_formula, data=credit_train)
+
+model_3 %>% # Good P-values for coefficients
+  broom::tidy(conf.int=TRUE)
+
+
+model4_formula <- as.formula("Balance ~ Income + Limit + Rating")
+
+model_4 <- lm(model4_formula, data=credit_train)
+
+model_4 %>% 
+  broom::tidy(conf.int=TRUE)
+
+
+model5_formula <- as.formula("Balance ~ Income + Limit + Rating + Age")
+
+model_5 <- lm(model5_formula, data=credit_train)
+
+model_5 %>% 
+  broom::tidy(conf.int=TRUE)
+
+model6_formula <- as.formula("Balance ~ Income + Limit + Rating + Age + Cards")
+
+model_6 <- lm(model6_formula, data=credit_train)
+
+model_6 %>% 
+  broom::tidy(conf.int=TRUE)
+
+
+model7_formula <- as.formula("Balance ~ Income + Limit + Rating + Age + Cards + Education")
+
+model_7 <- lm(model7_formula, data=credit_train)
+
+model_7 %>% 
+  broom::tidy(conf.int=TRUE)
+```
+
+
+Make Predictions on Test Data
+```{r}
+set.seed(10)
+
+Predict1 <- model_1 %>% 
+  broom::augment(data=credit_test)
+
+Summary1 <- summary(Predict1)
+
+ggplot(NULL) +
+  geom_point(data=Predict1, aes(x=1, y=Balance)) +
+  geom_line(data=Predict1, aes(x=1, y=Balance), col="blue") +
+  geom_point(data=Predict1, aes(x=1, y=Balance), col="red") +
+  labs(x="1", y="Balance")
+
+Predict2 <- model_2 %>% 
+  broom::augment(data=credit_test)
+
+Summary2 <- summary(Predict2)
+
+ggplot(NULL) +
+  geom_point(data=Predict2, aes(x=Income, y=Balance)) +
+  geom_line(data=Predict2, aes(x=Income, y=Balance), col="blue") +
+  geom_point(data=Predict2, aes(x=Income, y=Balance), col="red") +
+  labs(x="Income", y="Balance")
+
+Predict3 <- model_3 %>% 
+  broom::augment(data=credit_test)
+
+Summary3 <- summary(Predict3)
+
+ggplot(NULL) +
+  geom_point(data=Predict3, aes(x=Income + Limit, y=Balance)) +
+  geom_line(data=Predict3, aes(x=Income + Limit, y=Balance), col="blue") +
+  geom_point(data=Predict3, aes(x=Income + Limit, y=Balance), col="red") +
+  labs(x="Income + Limit", y="Balance")
+
+Predict4 <- model_4 %>% 
+  broom::augment(data=credit_test)
+
+Summary4 <- summary(Predict4)
+
+ggplot(NULL) +
+  geom_point(data=Predict4, aes(x=Income + Limit + Rating, y=Balance)) +
+  geom_line(data=Predict4, aes(x=Income + Limit + Rating, y=Balance), col="blue") +
+  geom_point(data=Predict4, aes(x=Income + Limit + Rating, y=Balance), col="red") +
+  labs(x="Income + Limit + Rating", y="Balance")
+
+Predict5 <- model_5 %>% 
+  broom::augment(data=credit_test)
+
+Summary5 <- summary(Predict5)
+
+ggplot(NULL) +
+  geom_point(data=Predict5, aes(x=Income + Limit + Rating + Age, y=Balance)) +
+  geom_line(data=Predict5, aes(x=Income + Limit + Rating + Age, y=Balance), col="blue") +
+  geom_point(data=Predict5, aes(x=Income + Limit + Rating + Age, y=Balance), col="red") +
+  labs(x="Income + Limit + Rating + Age", y="Balance")
+
+Predict6 <- model_6 %>% 
+  broom::augment(data=credit_test)
+
+Summary6 <- summary(Predict6)
+
+ggplot(NULL) +
+  geom_point(data=Predict6, aes(x=Income + Limit + Rating + Age + Cards, y=Balance)) +
+  geom_line(data=Predict6, aes(x=Income + Limit + Rating + Age + Cards, y=Balance), col="blue") +
+  geom_point(data=Predict6, aes(x=Income + Limit + Rating + Age + Cards, y=Balance), col="red") +
+  labs(x="Income + Limit + Rating + Age + Cards", y="Balance")
+
+
+Predict7 <- model_7 %>% 
+  broom::augment(data=credit_test)
+
+Summary7 <- summary(Predict7)
+
+ggplot(NULL) +
+  geom_point(data=Predict6, aes(x=Income + Limit + Rating + Age + Cards + Education, y=Balance)) +
+  geom_line(data=Predict6, aes(x=Income + Limit + Rating + Age + Cards + Education, y=Balance), col="blue") +
+  geom_point(data=Predict6, aes(x=Income + Limit + Rating + Age + Cards + Education, y=Balance), col="red") +
+  labs(x="Income + Limit + Rating + Age + Cards + Education", y="Balance")
+
+```
+
+
+
 # RMSE vs number of coefficients
 
 ```{r, echo=TRUE, warning=FALSE, message=FALSE}
@@ -64,7 +203,6 @@ RMSE_test <- runif(n=7)
 
 
 # Do your work here:
-
 
 # Save results in a data frame. Note this data frame is in wide format.
 results <- data_frame(
@@ -94,7 +232,7 @@ ggplot(results, aes(x=num_coefficients, y=RMSE, col=type)) +
 
 Compare and contrast the two curves and hypothesize as to the root cause of any differences.
 
-
+Didn't finish.
 
 # Bonus
 
